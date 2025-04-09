@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Skill Builder Game for Kids</title>
+    <style>
+      /* Basic style for a clean, family-friendly interface */
+      body, html {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+      }
+      #description {
+        text-align: center;
+        padding: 20px;
+      }
+      #gameCanvas {
+        display: block;
+        margin: 20px auto;
+        background-color: #fff;
+        border: 2px solid #ccc;
+      }
+      #qrCode {
+        margin: 20px auto;
+        text-align: center;
+      }
+      button {
+        font-size: 18px;
+        padding: 10px 20px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Introduction & Game Info -->
+    <div id="description">
+      <h1>Skill Builder Game for Kids</h1>
+      <p>
+        Welcome to the Skill Builder Game, designed to help kids learn essential skills through fun challenges.
+        In each round, you’ll be asked to select the correct shape with a specific color. The game provides feedback,
+        builds confidence, and tracks your score as you progress through multiple rounds.
+      </p>
+      <button id="startButton">Start Game</button>
+    </div>
+
+    <!-- Canvas for the game -->
+    <canvas id="gameCanvas" width="800" height="600" style="display: none;"></canvas>
+
+    <!-- QR Code Display Area -->
+    <div id="qrCode"></div>
+
+    <!-- QR Code library loaded from a CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <script>
+      /******************************************************
+       * Skill Builder Game for Kids - Web Version
+       *
+       * This game is meant for children who need an engaging,
+       * interactive way to earn and practice essential skills.
+       *
+       * Game Overview:
+       * - Displays a challenge (e.g., "Click the red circle")
+       * - Shows 3 options: one correct and two decoys.
+       * - Awards points for correct answers; deducts for wrong ones.
+       * - Advances through several rounds with clear feedback.
+       *
+       * The game also automatically generates a QR code for the
+       * current page URL, making it easy to load on a mobile device.
+       ******************************************************/
+
+      // Get DOM elements
+      let canvas = document.getElementById('gameCanvas');
+      let ctx = canvas.getContext('2d');
+      let startButton = document.getElementById('startButton');
+      let description = document.getElementById('description');
+      
+      // Game state variables
+      let gameState = 'welcome';  // Possible states: welcome, play, end
+      let score = 0;
+      let round = 1;
+      const totalRounds = 5;  // You can expand the number of rounds as needed
+      
+      // Define available colors and shapes
+      const COLORS = ['red', 'green', 'blue', 'yellow', 'orange', 'purple'];
+      const SHAPES = ['circle', 'square'];
+      
+      // Challenge variables for the current round
+      let targetColor, targetShape;
+      let options = [];   // Array to hold option objects with shape, color, position, and correctness flag
+      let message = '';
+
+      // Generate a new challenge for the current round
+      function generateChallenge() {
+        // Randomly choose a target color and shape for the current challenge
+        targetColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+        targetShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+
+        // Prepare an array of three options (one correct, two incorrect)
+        options = [];
+        let correctIndex = Math.floor(Math.random() * 3);  // Position of correct answer
+
+        for (let i = 0; i < 3; i++) {
+          let option = { color: null, shape: null, x: 0, y: 0, isCorrect: false };
+          if (i === correctIndex) {
+            // The correct option matches the target
+            option.color = targetColor;
+            option.shape = targetShape;
+            option.isCorrect = true;
+          } else {
+            // Generate a decoy that is different in either color or shape
+            do {
+              option.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+              option.shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+            } while (option.color === targetColor && option.shape === targetShape);
+          }
+          // Determine positions (evenly spaced horizontally)
+          option.x = 150 + i * 250;
+          option.y = 400;
+          options.push(option);
+        }
+        message = `Round ${round}: Click the ${targetColor} ${targetShape}`;
+      }
+
+      // Draw the game state on the canvas
+      function drawGame() {
+        // Clear the canvas for fresh drawing
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the challenge message and score at the top
+        ctx.font = "24px Arial";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.fillText(message, canvas.width / 2, 50);
+        ctx.font = "20px Arial";
+        ctx.fillText("Score: " + score, canvas.width - 80, 30);
+
+        // Draw each option on the canvas
+        options.forEach(option => {
+          ctx.fillStyle = option.color;
+          if (option.shape === 'circle') {
+            ctx.beginPath();
+            ctx.arc(option.x, option.y, 40, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
+          } else if (option.shape === 'square') {
+            ctx.fillRect(option.x - 40, option.y - 40, 80, 80);
+          }
+        });
+      }
+
+      // Handle the player's click on the canvas
+      function handleClick(event) {
+        let rect = canvas.getBoundingClientRect();
+        let x = event.clientX - rect.left;
+        let y = event.clientY - rect.top;
+
+        // Evaluate each option to see if it was clicked
+        options.forEach(option => {
+          if (option.shape === 'circle') {
+            let dist = Math.sqrt((x - option.x) ** 2 + (y - option.y) ** 2);
+            if (dist <= 40) {
+              processOption(option);
+            }
+          } else if (option.shape === 'square') {
+            if (x >= option.x - 40 && x <= option.x + 40 && y >= option.y - 40 && y <= option.y + 40) {
+              processOption(option);
+            }
+          }
+        });
+      }
+
+      // Process the result of a player's click
+      function processOption(option) {
+        if (option.isCorrect) {
+          score += 10;
+          message = "Correct! Great job!";
+        } else {
+          score = Math.max(0, score - 5);
+          message = "Oops, that's not right. Let's try the next round!";
+        }
+        drawGame();
+        // Allow a short delay before advancing to the next round
+        setTimeout(() => {
+          round++;
+          if (round > totalRounds) {
+            endGame();
+          } else {
+            generateChallenge();
+            drawGame();
+          }
+        }, 1000);
+      }
+
+      // End the game and show the final score
+      function endGame() {
+        gameState = 'end';
+        message = `Game Over! Your Final Score: ${score}`;
+        drawGame();
+        // Prompt the user to play again after a short pause
+        setTimeout(() => {
+          if (confirm("Game Over! Would you like to play again?")) {
+            score = 0;
+            round = 1;
+            gameState = 'play';
+            generateChallenge();
+            drawGame();
+          }
+        }, 500);
+      }
+
+      // Set up event listener on the canvas for click events
+      canvas.addEventListener('click', handleClick);
+
+      // Start the game when the button is clicked:
+      // Hide the introduction, show the canvas, and initialize the first round.
+      startButton.addEventListener('click', () => {
+        description.style.display = 'none';
+        canvas.style.display = 'block';
+        gameState = 'play';
+        generateChallenge();
+        drawGame();
+      });
+
+      // Generate a QR Code that encodes the current page URL.
+      // You can scan this QR code with your phone to open and play the game.
+      let qrDiv = document.getElementById("qrCode");
+      let currentUrl = window.location.href;
+      new QRCode(qrDiv, {
+        text: currentUrl,
+        width: 128,
+        height: 128,
+      });
+    </script>
+  </body>
+</html>
