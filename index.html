@@ -1,238 +1,265 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Skill Builder Game for Kids</title>
-    <style>
-      /* Basic style for a clean, family-friendly interface */
-      body, html {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-      }
-      #description {
-        text-align: center;
-        padding: 20px;
-      }
-      #gameCanvas {
-        display: block;
-        margin: 20px auto;
-        background-color: #fff;
-        border: 2px solid #ccc;
-      }
-      #qrCode {
-        margin: 20px auto;
-        text-align: center;
-      }
-      button {
-        font-size: 18px;
-        padding: 10px 20px;
-        margin-top: 10px;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Introduction & Game Info -->
-    <div id="description">
-      <h1>Skill Builder Game for Kids</h1>
-      <p>
-        Welcome to the Skill Builder Game, designed to help kids learn essential skills through fun challenges.
-        In each round, you’ll be asked to select the correct shape with a specific color. The game provides feedback,
-        builds confidence, and tracks your score as you progress through multiple rounds.
-      </p>
-      <button id="startButton">Start Game</button>
-    </div>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Realistic Predator Snake</title>
+<style>
+  html,body {
+    margin:0;
+    padding:0;
+    background: #222;
+    overflow:hidden;
+    color:#fff;
+    font-family: Arial, sans-serif;
+  }
+  #hud {
+    position:absolute;
+    top:10px;
+    left:10px;
+    z-index:10;
+  }
+  canvas {
+    display:block;
+    margin:0 auto;
+    background:#000;
+  }
+</style>
+</head>
+<body>
+<div id="hud">Score: <span id="score">0</span></div>
+<canvas id="game" width="800" height="600"></canvas>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreSpan = document.getElementById('score');
 
-    <!-- Canvas for the game -->
-    <canvas id="gameCanvas" width="800" height="600" style="display: none;"></canvas>
+// Day/night cycle variables
+let time = 0; // increases gradually
 
-    <!-- QR Code Display Area -->
-    <div id="qrCode"></div>
+// Snake state
+const snake = {
+  segments: [],
+  direction: {x:1, y:0},
+  targetDir: {x:1, y:0},
+  speed: 2.5,
+  segmentLength: 10,
+  desiredLength: 30,
+};
 
-    <!-- QR Code library loaded from a CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <script>
-      /******************************************************
-       * Skill Builder Game for Kids - Web Version
-       *
-       * This game is meant for children who need an engaging,
-       * interactive way to earn and practice essential skills.
-       *
-       * Game Overview:
-       * - Displays a challenge (e.g., "Click the red circle")
-       * - Shows 3 options: one correct and two decoys.
-       * - Awards points for correct answers; deducts for wrong ones.
-       * - Advances through several rounds with clear feedback.
-       *
-       * The game also automatically generates a QR code for the
-       * current page URL, making it easy to load on a mobile device.
-       ******************************************************/
+// Predator state
+const predator = {
+  x: Math.random()*canvas.width,
+  y: Math.random()*canvas.height,
+  speed: 1.8,
+};
 
-      // Get DOM elements
-      let canvas = document.getElementById('gameCanvas');
-      let ctx = canvas.getContext('2d');
-      let startButton = document.getElementById('startButton');
-      let description = document.getElementById('description');
-      
-      // Game state variables
-      let gameState = 'welcome';  // Possible states: welcome, play, end
-      let score = 0;
-      let round = 1;
-      const totalRounds = 5;  // You can expand the number of rounds as needed
-      
-      // Define available colors and shapes
-      const COLORS = ['red', 'green', 'blue', 'yellow', 'orange', 'purple'];
-      const SHAPES = ['circle', 'square'];
-      
-      // Challenge variables for the current round
-      let targetColor, targetShape;
-      let options = [];   // Array to hold option objects with shape, color, position, and correctness flag
-      let message = '';
+// Food items and obstacles
+let foods = [];
+let obstacles = [];
+let score = 0;
+let gameOver = false;
 
-      // Generate a new challenge for the current round
-      function generateChallenge() {
-        // Randomly choose a target color and shape for the current challenge
-        targetColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-        targetShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+function init() {
+  // create initial snake segments
+  for(let i=0;i<snake.desiredLength;i++){
+    snake.segments.push({x:400 - i*snake.segmentLength, y:300});
+  }
+  spawnFood();
+  spawnObstacles();
+  requestAnimationFrame(gameLoop);
+}
 
-        // Prepare an array of three options (one correct, two incorrect)
-        options = [];
-        let correctIndex = Math.floor(Math.random() * 3);  // Position of correct answer
+function spawnFood(){
+  // Create normal, golden and poison food randomly
+  const types = [
+    {type:'normal', color:'green', score:10, growth:5},
+    {type:'gold', color:'gold', score:50, growth:10},
+    {type:'poison', color:'purple', score:-20, growth:-5}
+  ];
+  const choice = types[Math.floor(Math.random()*types.length)];
+  foods.push({
+    x: Math.random()* (canvas.width-40)+20,
+    y: Math.random()* (canvas.height-40)+20,
+    radius:8,
+    ...choice
+  });
+}
 
-        for (let i = 0; i < 3; i++) {
-          let option = { color: null, shape: null, x: 0, y: 0, isCorrect: false };
-          if (i === correctIndex) {
-            // The correct option matches the target
-            option.color = targetColor;
-            option.shape = targetShape;
-            option.isCorrect = true;
-          } else {
-            // Generate a decoy that is different in either color or shape
-            do {
-              option.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-              option.shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-            } while (option.color === targetColor && option.shape === targetShape);
-          }
-          // Determine positions (evenly spaced horizontally)
-          option.x = 150 + i * 250;
-          option.y = 400;
-          options.push(option);
-        }
-        message = `Round ${round}: Click the ${targetColor} ${targetShape}`;
-      }
+function spawnObstacles(){
+  for(let i=0;i<5;i++){
+    obstacles.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      radius:15 + Math.random()*15,
+    });
+  }
+}
 
-      // Draw the game state on the canvas
-      function drawGame() {
-        // Clear the canvas for fresh drawing
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+function updateSnake(){
+  // Smoothly adjust direction toward target
+  snake.direction.x += (snake.targetDir.x - snake.direction.x)*0.2;
+  snake.direction.y += (snake.targetDir.y - snake.direction.y)*0.2;
+  const len = Math.hypot(snake.direction.x, snake.direction.y);
+  snake.direction.x /= len;
+  snake.direction.y /= len;
 
-        // Draw the challenge message and score at the top
-        ctx.font = "24px Arial";
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.fillText(message, canvas.width / 2, 50);
-        ctx.font = "20px Arial";
-        ctx.fillText("Score: " + score, canvas.width - 80, 30);
+  // compute new head position
+  const head = {
+    x: snake.segments[0].x + snake.direction.x * snake.speed,
+    y: snake.segments[0].y + snake.direction.y * snake.speed,
+  };
 
-        // Draw each option on the canvas
-        options.forEach(option => {
-          ctx.fillStyle = option.color;
-          if (option.shape === 'circle') {
-            ctx.beginPath();
-            ctx.arc(option.x, option.y, 40, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.closePath();
-          } else if (option.shape === 'square') {
-            ctx.fillRect(option.x - 40, option.y - 40, 80, 80);
-          }
-        });
-      }
+  // bound within canvas
+  if(head.x <0) head.x=canvas.width;
+  if(head.y <0) head.y=canvas.height;
+  if(head.x>canvas.width) head.x=0;
+  if(head.y>canvas.height) head.y=0;
 
-      // Handle the player's click on the canvas
-      function handleClick(event) {
-        let rect = canvas.getBoundingClientRect();
-        let x = event.clientX - rect.left;
-        let y = event.clientY - rect.top;
+  // add head and remove tail if necessary
+  snake.segments.unshift(head);
+  while(snake.segments.length>snake.desiredLength){
+    snake.segments.pop();
+  }
+}
 
-        // Evaluate each option to see if it was clicked
-        options.forEach(option => {
-          if (option.shape === 'circle') {
-            let dist = Math.sqrt((x - option.x) ** 2 + (y - option.y) ** 2);
-            if (dist <= 40) {
-              processOption(option);
-            }
-          } else if (option.shape === 'square') {
-            if (x >= option.x - 40 && x <= option.x + 40 && y >= option.y - 40 && y <= option.y + 40) {
-              processOption(option);
-            }
-          }
-        });
-      }
+function updatePredator(){
+  const head = snake.segments[0];
+  const dx = head.x - predator.x;
+  const dy = head.y - predator.y;
+  const len = Math.hypot(dx,dy);
+  predator.x += dx/len * predator.speed;
+  predator.y += dy/len * predator.speed;
+  // wrap
+  if(predator.x <0) predator.x=canvas.width;
+  if(predator.y <0) predator.y=canvas.height;
+  if(predator.x>canvas.width) predator.x=0;
+  if(predator.y>canvas.height) predator.y=0;
 
-      // Process the result of a player's click
-      function processOption(option) {
-        if (option.isCorrect) {
-          score += 10;
-          message = "Correct! Great job!";
-        } else {
-          score = Math.max(0, score - 5);
-          message = "Oops, that's not right. Let's try the next round!";
-        }
-        drawGame();
-        // Allow a short delay before advancing to the next round
-        setTimeout(() => {
-          round++;
-          if (round > totalRounds) {
-            endGame();
-          } else {
-            generateChallenge();
-            drawGame();
-          }
-        }, 1000);
-      }
+  // check collision with snake head
+  if(len < 15){
+    gameOver = true;
+  }
+}
 
-      // End the game and show the final score
-      function endGame() {
-        gameState = 'end';
-        message = `Game Over! Your Final Score: ${score}`;
-        drawGame();
-        // Prompt the user to play again after a short pause
-        setTimeout(() => {
-          if (confirm("Game Over! Would you like to play again?")) {
-            score = 0;
-            round = 1;
-            gameState = 'play';
-            generateChallenge();
-            drawGame();
-          }
-        }, 500);
-      }
+function checkCollisions(){
+  const head = snake.segments[0];
+  // self collision
+  for(let i=4;i<snake.segments.length;i++){
+    const s = snake.segments[i];
+    if(Math.hypot(head.x-s.x, head.y-s.y) < snake.segmentLength/2){
+      gameOver = true;
+      return;
+    }
+  }
+  // obstacles
+  for(const ob of obstacles){
+    if(Math.hypot(head.x-ob.x, head.y-ob.y) < ob.radius){
+      gameOver = true;
+      return;
+    }
+  }
+  // foods
+  for(let i=foods.length-1;i>=0;i--){
+    const f = foods[i];
+    if(Math.hypot(head.x-f.x, head.y-f.y) < f.radius+snake.segmentLength/2){
+      snake.desiredLength += f.growth;
+      score += f.score;
+      foods.splice(i,1);
+      spawnFood();
+    }
+  }
+}
 
-      // Set up event listener on the canvas for click events
-      canvas.addEventListener('click', handleClick);
+function drawBackground(){
+  // simple day/night gradient based on time
+  time += 0.002;
+  const t = (Math.sin(time)+1)/2; // 0..1
+  const grad = ctx.createLinearGradient(0,0,0,canvas.height);
+  grad.addColorStop(0,`rgb(${20+80*t}, ${30+80*t}, ${20+80*t})`);
+  grad.addColorStop(1,`rgb(${10+40*t}, ${20+40*t}, ${10+40*t})`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
 
-      // Start the game when the button is clicked:
-      // Hide the introduction, show the canvas, and initialize the first round.
-      startButton.addEventListener('click', () => {
-        description.style.display = 'none';
-        canvas.style.display = 'block';
-        gameState = 'play';
-        generateChallenge();
-        drawGame();
-      });
+function drawSnake(){
+  for(let i=snake.segments.length-1;i>=0;i--){
+    const seg = snake.segments[i];
+    const size = snake.segmentLength;
+    const hue = 120 + i*0.5; // slight gradient along body
+    ctx.fillStyle = `hsl(${hue},70%,40%)`;
+    ctx.beginPath();
+    ctx.arc(seg.x, seg.y, size/2, 0, Math.PI*2);
+    ctx.fill();
+  }
+  // eyes on head
+  const head = snake.segments[0];
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(head.x+3, head.y-3, 2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath();
+  ctx.arc(head.x+3, head.y+3, 2, 0, Math.PI*2); ctx.fill();
+}
 
-      // Generate a QR Code that encodes the current page URL.
-      // You can scan this QR code with your phone to open and play the game.
-      let qrDiv = document.getElementById("qrCode");
-      let currentUrl = window.location.href;
-      new QRCode(qrDiv, {
-        text: currentUrl,
-        width: 128,
-        height: 128,
-      });
-    </script>
-  </body>
+function drawPredator(){
+  ctx.fillStyle = 'red';
+  ctx.beginPath();
+  ctx.arc(predator.x, predator.y, 12, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='white';
+  ctx.beginPath();
+  ctx.arc(predator.x-3, predator.y-3,2,0,Math.PI*2); ctx.fill();
+  ctx.beginPath();
+  ctx.arc(predator.x-3, predator.y+3,2,0,Math.PI*2); ctx.fill();
+}
+
+function drawFoods(){
+  for(const f of foods){
+    ctx.fillStyle = f.color;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, f.radius, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function drawObstacles(){
+  ctx.fillStyle = '#555';
+  for(const ob of obstacles){
+    ctx.beginPath();
+    ctx.arc(ob.x, ob.y, ob.radius, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function gameLoop(){
+  if(gameOver){
+    ctx.fillStyle='rgba(0,0,0,0.5)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#fff';
+    ctx.font='48px Arial';
+    ctx.textAlign='center';
+    ctx.fillText('Game Over', canvas.width/2, canvas.height/2);
+    return;
+  }
+  drawBackground();
+  updateSnake();
+  updatePredator();
+  checkCollisions();
+  drawObstacles();
+  drawFoods();
+  drawSnake();
+  drawPredator();
+  scoreSpan.textContent = score;
+  requestAnimationFrame(gameLoop);
+}
+
+window.addEventListener('keydown', e=>{
+  if(e.key==='ArrowUp') snake.targetDir = {x:0, y:-1};
+  if(e.key==='ArrowDown') snake.targetDir = {x:0, y:1};
+  if(e.key==='ArrowLeft') snake.targetDir = {x:-1, y:0};
+  if(e.key==='ArrowRight') snake.targetDir = {x:1, y:0};
+});
+
+init();
+</script>
+</body>
 </html>

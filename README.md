@@ -1,2 +1,3 @@
 # AI-Game
-This game was made with 100 percent ai! No human coding at all!
+
+A fully AI-generated game featuring a realistic snake with smooth physics, dynamic day/night cycle, multiple food types and a relentless predator. Move with arrow keys and survive as long as you can.
