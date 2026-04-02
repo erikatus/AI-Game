@@ -153,23 +153,30 @@
 
       // Handle the player's click on the canvas
       function handleClick(event) {
+        // Ignore clicks when the game isn't actively being played
+        if (gameState !== 'play') {
+          return;
+        }
+
         let rect = canvas.getBoundingClientRect();
         let x = event.clientX - rect.left;
         let y = event.clientY - rect.top;
 
         // Evaluate each option to see if it was clicked
-        options.forEach(option => {
+        for (let option of options) {
           if (option.shape === 'circle') {
             let dist = Math.sqrt((x - option.x) ** 2 + (y - option.y) ** 2);
             if (dist <= 40) {
               processOption(option);
+              return;
             }
           } else if (option.shape === 'square') {
             if (x >= option.x - 40 && x <= option.x + 40 && y >= option.y - 40 && y <= option.y + 40) {
               processOption(option);
+              return;
             }
           }
-        });
+        }
       }
 
       // Process the result of a player's click
@@ -198,6 +205,7 @@
       function endGame() {
         gameState = 'end';
         message = `Game Over! Your Final Score: ${score}`;
+        options = []; // Clear remaining shapes so they can't be clicked after the game ends
         drawGame();
         // Prompt the user to play again after a short pause
         setTimeout(() => {
