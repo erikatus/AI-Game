@@ -1,238 +1,852 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Skill Builder Game for Kids</title>
-    <style>
-      /* Basic style for a clean, family-friendly interface */
-      body, html {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-      }
-      #description {
-        text-align: center;
-        padding: 20px;
-      }
-      #gameCanvas {
-        display: block;
-        margin: 20px auto;
-        background-color: #fff;
-        border: 2px solid #ccc;
-      }
-      #qrCode {
-        margin: 20px auto;
-        text-align: center;
-      }
-      button {
-        font-size: 18px;
-        padding: 10px 20px;
-        margin-top: 10px;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Introduction & Game Info -->
-    <div id="description">
-      <h1>Skill Builder Game for Kids</h1>
-      <p>
-        Welcome to the Skill Builder Game, designed to help kids learn essential skills through fun challenges.
-        In each round, you’ll be asked to select the correct shape with a specific color. The game provides feedback,
-        builds confidence, and tracks your score as you progress through multiple rounds.
-      </p>
-      <button id="startButton">Start Game</button>
-    </div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MosaicBots — Build, Discover, Deploy AI Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080b12;
+      --bg-soft: #0f1422;
+      --surface: rgba(255, 255, 255, 0.04);
+      --surface-2: rgba(255, 255, 255, 0.06);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #f3f7ff;
+      --muted: #b7c2da;
+      --primary: #7c8cff;
+      --primary-2: #32d6ff;
+      --success: #4ade80;
+      --danger: #fb7185;
+      --warn: #fbbf24;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      --radius-lg: 22px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --max: 1180px;
+    }
 
-    <!-- Canvas for the game -->
-    <canvas id="gameCanvas" width="800" height="600" style="display: none;"></canvas>
+    * { box-sizing: border-box; }
 
-    <!-- QR Code Display Area -->
-    <div id="qrCode"></div>
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 20% -10%, #18203a, transparent 60%),
+                  radial-gradient(1000px 700px at 120% 10%, #0f3860, transparent 50%),
+                  var(--bg);
+      scroll-behavior: smooth;
+    }
 
-    <!-- QR Code library loaded from a CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <script>
-      /******************************************************
-       * Skill Builder Game for Kids - Web Version
-       *
-       * This game is meant for children who need an engaging,
-       * interactive way to earn and practice essential skills.
-       *
-       * Game Overview:
-       * - Displays a challenge (e.g., "Click the red circle")
-       * - Shows 3 options: one correct and two decoys.
-       * - Awards points for correct answers; deducts for wrong ones.
-       * - Advances through several rounds with clear feedback.
-       *
-       * The game also automatically generates a QR code for the
-       * current page URL, making it easy to load on a mobile device.
-       ******************************************************/
+    body { overflow-x: hidden; }
 
-      // Get DOM elements
-      let canvas = document.getElementById('gameCanvas');
-      let ctx = canvas.getContext('2d');
-      let startButton = document.getElementById('startButton');
-      let description = document.getElementById('description');
-      
-      // Game state variables
-      let gameState = 'welcome';  // Possible states: welcome, play, end
-      let score = 0;
-      let round = 1;
-      const totalRounds = 5;  // You can expand the number of rounds as needed
-      
-      // Define available colors and shapes
-      const COLORS = ['red', 'green', 'blue', 'yellow', 'orange', 'purple'];
-      const SHAPES = ['circle', 'square'];
-      
-      // Challenge variables for the current round
-      let targetColor, targetShape;
-      let options = [];   // Array to hold option objects with shape, color, position, and correctness flag
-      let message = '';
+    .cursor-glow {
+      position: fixed;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(circle, rgba(124, 140, 255, 0.2), transparent 65%);
+      transform: translate(-50%, -50%);
+      filter: blur(8px);
+      opacity: 0.8;
+    }
 
-      // Generate a new challenge for the current round
-      function generateChallenge() {
-        // Randomly choose a target color and shape for the current challenge
-        targetColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-        targetShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+    .blob {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(38px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.35;
+    }
 
-        // Prepare an array of three options (one correct, two incorrect)
-        options = [];
-        let correctIndex = Math.floor(Math.random() * 3);  // Position of correct answer
+    .blob.one { width: 320px; height: 320px; background: #4f46e5; top: 12%; left: -100px; }
+    .blob.two { width: 260px; height: 260px; background: #0ea5e9; bottom: 10%; right: -80px; }
 
-        for (let i = 0; i < 3; i++) {
-          let option = { color: null, shape: null, x: 0, y: 0, isCorrect: false };
-          if (i === correctIndex) {
-            // The correct option matches the target
-            option.color = targetColor;
-            option.shape = targetShape;
-            option.isCorrect = true;
-          } else {
-            // Generate a decoy that is different in either color or shape
-            do {
-              option.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-              option.shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-            } while (option.color === targetColor && option.shape === targetShape);
-          }
-          // Determine positions (evenly spaced horizontally)
-          option.x = 150 + i * 250;
-          option.y = 400;
-          options.push(option);
-        }
-        message = `Round ${round}: Click the ${targetColor} ${targetShape}`;
-      }
+    .site { position: relative; z-index: 1; }
 
-      // Draw the game state on the canvas
-      function drawGame() {
-        // Clear the canvas for fresh drawing
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    .container {
+      width: min(var(--max), calc(100% - 2rem));
+      margin-inline: auto;
+    }
 
-        // Draw the challenge message and score at the top
-        ctx.font = "24px Arial";
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.fillText(message, canvas.width / 2, 50);
-        ctx.font = "20px Arial";
-        ctx.fillText("Score: " + score, canvas.width - 80, 30);
+    .topbar {
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(14px);
+      background: rgba(8, 11, 18, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 50;
+    }
 
-        // Draw each option on the canvas
-        options.forEach(option => {
-          ctx.fillStyle = option.color;
-          if (option.shape === 'circle') {
-            ctx.beginPath();
-            ctx.arc(option.x, option.y, 40, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.closePath();
-          } else if (option.shape === 'square') {
-            ctx.fillRect(option.x - 40, option.y - 40, 80, 80);
-          }
-        });
-      }
+    .topbar .inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      gap: 14px;
+    }
 
-      // Handle the player's click on the canvas
-      function handleClick(event) {
-        let rect = canvas.getBoundingClientRect();
-        let x = event.clientX - rect.left;
-        let y = event.clientY - rect.top;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
 
-        // Evaluate each option to see if it was clicked
-        options.forEach(option => {
-          if (option.shape === 'circle') {
-            let dist = Math.sqrt((x - option.x) ** 2 + (y - option.y) ** 2);
-            if (dist <= 40) {
-              processOption(option);
-            }
-          } else if (option.shape === 'square') {
-            if (x >= option.x - 40 && x <= option.x + 40 && y >= option.y - 40 && y <= option.y + 40) {
-              processOption(option);
-            }
-          }
-        });
-      }
+    .brand-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(145deg, var(--primary), var(--primary-2));
+      box-shadow: 0 8px 18px rgba(50, 214, 255, 0.25);
+    }
 
-      // Process the result of a player's click
-      function processOption(option) {
-        if (option.isCorrect) {
-          score += 10;
-          message = "Correct! Great job!";
-        } else {
-          score = Math.max(0, score - 5);
-          message = "Oops, that's not right. Let's try the next round!";
-        }
-        drawGame();
-        // Allow a short delay before advancing to the next round
-        setTimeout(() => {
-          round++;
-          if (round > totalRounds) {
-            endGame();
-          } else {
-            generateChallenge();
-            drawGame();
-          }
-        }, 1000);
-      }
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
 
-      // End the game and show the final score
-      function endGame() {
-        gameState = 'end';
-        message = `Game Over! Your Final Score: ${score}`;
-        drawGame();
-        // Prompt the user to play again after a short pause
-        setTimeout(() => {
-          if (confirm("Game Over! Would you like to play again?")) {
-            score = 0;
-            round = 1;
-            gameState = 'play';
-            generateChallenge();
-            drawGame();
-          }
-        }, 500);
-      }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s ease;
+    }
 
-      // Set up event listener on the canvas for click events
-      canvas.addEventListener('click', handleClick);
+    nav a:hover { color: var(--text); }
 
-      // Start the game when the button is clicked:
-      // Hide the introduction, show the canvas, and initialize the first round.
-      startButton.addEventListener('click', () => {
-        description.style.display = 'none';
-        canvas.style.display = 'block';
-        gameState = 'play';
-        generateChallenge();
-        drawGame();
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(120deg, var(--primary), var(--primary-2));
+      box-shadow: 0 10px 24px rgba(61, 161, 255, 0.35);
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    section { padding: 80px 0; }
+
+    .hero {
+      padding-top: 76px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .kicker {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(124, 140, 255, 0.14);
+      border: 1px solid rgba(124, 140, 255, 0.4);
+      border-radius: 999px;
+      color: #d8ddff;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      max-width: 14ch;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.72;
+      max-width: 60ch;
+      margin-top: 18px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--surface), rgba(255, 255, 255, 0.02));
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-label { color: var(--muted); font-size: 13px; }
+
+    .signal {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .signal .title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #dbe5ff;
+      margin-bottom: 8px;
+    }
+
+    .bar {
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      overflow: hidden;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(120deg, var(--primary), var(--primary-2));
+    }
+
+    .stats {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .stat .num { font-size: 1.45rem; font-weight: 800; margin-bottom: 4px; }
+    .stat .txt { font-size: 12px; color: var(--muted); }
+
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-copy {
+      color: var(--muted);
+      max-width: 70ch;
+      line-height: 1.7;
+      margin: 0 0 24px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1.2fr auto;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    input[type="search"], input[type="text"], textarea, select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(124, 140, 255, 0.7);
+      box-shadow: 0 0 0 3px rgba(124, 140, 255, 0.2);
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .chip {
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 12px;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .chip.active {
+      color: white;
+      border-color: rgba(124, 140, 255, 0.8);
+      background: rgba(124, 140, 255, 0.25);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      display: grid;
+      gap: 10px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(124, 140, 255, 0.7);
+    }
+
+    .pill {
+      display: inline-flex;
+      width: fit-content;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #dbe5ff;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .tool-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .tiny { font-size: 12px; color: var(--muted); }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .builder-form {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    textarea { min-height: 96px; resize: vertical; }
+
+    .preview {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .preview-block {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .pricing-toggle {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .pricing-toggle button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .pricing-toggle button.active {
+      background: rgba(124, 140, 255, 0.22);
+      color: #eef1ff;
+    }
+
+    .price-card .amount { font-size: 2rem; font-weight: 800; margin-top: 6px; }
+
+    .faq {
+      display: grid;
+      gap: 10px;
+      max-width: 860px;
+    }
+
+    .faq-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .faq-q {
+      margin: 0;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      color: var(--muted);
+      line-height: 1.65;
+      padding: 0 16px;
+    }
+
+    .faq-item.open .faq-a { max-height: 180px; padding-bottom: 14px; }
+
+    .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.show { opacity: 1; transform: translateY(0); }
+
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 28px 0 34px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .hero, .split { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      .controls { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      nav { display: none; }
+      .topbar .inner { justify-content: space-between; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <div class="blob one" data-speed="0.05"></div>
+  <div class="blob two" data-speed="-0.03"></div>
+
+  <div class="site">
+    <header class="topbar">
+      <div class="container inner">
+        <div class="brand">
+          <span class="brand-badge" aria-hidden="true"></span>
+          <span>MosaicBots</span>
+        </div>
+        <nav>
+          <a href="#marketplace">Marketplace</a>
+          <a href="#builder">Builder</a>
+          <a href="#economy">Monetization</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <button class="btn btn-primary">Get Started</button>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="container hero">
+          <div class="reveal">
+            <span class="kicker">⚡ AI Marketplace Infrastructure</span>
+            <h1>Build, discover, and deploy modular AI tools in one ecosystem.</h1>
+            <p class="lead">
+              MosaicBots is a meta-layer for AI utility distribution: creators ship production-ready tools,
+              users discover by intent, and teams operationalize automation with clear economics.
+            </p>
+            <div class="hero-actions">
+              <button class="btn btn-primary">Explore Tools</button>
+              <button class="btn btn-ghost">Publish a Tool</button>
+            </div>
+
+            <div class="stats" id="liveStats">
+              <div class="stat"><div class="num" data-count="1480">0</div><div class="txt">Tools Listed</div></div>
+              <div class="stat"><div class="num" data-count="96200">0</div><div class="txt">Monthly Runs</div></div>
+              <div class="stat"><div class="num" data-count="4200">0</div><div class="txt">Creators</div></div>
+              <div class="stat"><div class="num" data-count="99.95">0</div><div class="txt">Uptime SLA %</div></div>
+            </div>
+          </div>
+
+          <aside class="panel hero-card reveal">
+            <div class="mini-label">Realtime orchestration health</div>
+            <div class="signal">
+              <div class="title"><span>LLM Router</span><span id="r1">94%</span></div>
+              <div class="bar"><span style="width: 94%"></span></div>
+            </div>
+            <div class="signal">
+              <div class="title"><span>Inference Queue</span><span id="r2">81%</span></div>
+              <div class="bar"><span style="width: 81%"></span></div>
+            </div>
+            <div class="signal">
+              <div class="title"><span>Container Pool</span><span id="r3">88%</span></div>
+              <div class="bar"><span style="width: 88%"></span></div>
+            </div>
+            <p class="tiny">Status auto-refreshes to simulate platform observability.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="marketplace">
+        <div class="container">
+          <h2 class="section-title reveal">AI Tool Marketplace</h2>
+          <p class="section-copy reveal">
+            Discover tools by category, pricing model, and quality signals. Every card below behaves like
+            a lightweight interactive endpoint preview.
+          </p>
+
+          <div class="controls reveal">
+            <input id="searchTools" type="search" placeholder="Search tools by name, tag, or use case..." />
+            <select id="sortTools" aria-label="Sort tools">
+              <option value="rating">Sort: Highest Rated</option>
+              <option value="runs">Sort: Most Runs</option>
+              <option value="price">Sort: Lowest Price</option>
+            </select>
+          </div>
+
+          <div class="chips reveal" id="categoryFilters">
+            <button class="chip active" data-category="All">All</button>
+            <button class="chip" data-category="Productivity">Productivity</button>
+            <button class="chip" data-category="DevOps">DevOps</button>
+            <button class="chip" data-category="Research">Research</button>
+            <button class="chip" data-category="Creative">Creative</button>
+            <button class="chip" data-category="Support">Support</button>
+          </div>
+
+          <div class="grid reveal" id="toolGrid"></div>
+        </div>
+      </section>
+
+      <section id="builder">
+        <div class="container">
+          <h2 class="section-title reveal">Tool Builder Interface</h2>
+          <p class="section-copy reveal">
+            Simulate the creator workflow: define I/O schema, deployment mode, and revenue settings,
+            then preview how your tool appears in the marketplace.
+          </p>
+
+          <div class="split">
+            <form class="panel builder-form reveal" id="builderForm">
+              <label>Tool Name
+                <input type="text" id="toolName" placeholder="e.g. Contract Risk Analyzer" required />
+              </label>
+              <label>Category
+                <select id="toolCategory">
+                  <option>Productivity</option>
+                  <option>DevOps</option>
+                  <option>Research</option>
+                  <option>Creative</option>
+                  <option>Support</option>
+                </select>
+              </label>
+              <label>Input Schema
+                <textarea id="toolInput" placeholder="{ text: string, tone: string, max_tokens: number }"></textarea>
+              </label>
+              <label>Output Behavior
+                <textarea id="toolOutput" placeholder="Returns risk labels + confidence + mitigation actions"></textarea>
+              </label>
+              <label>Pricing
+                <select id="toolPricing">
+                  <option value="0">Free</option>
+                  <option value="9">$9/mo</option>
+                  <option value="29">$29/mo</option>
+                  <option value="99">$99/mo</option>
+                </select>
+              </label>
+              <button type="submit" class="btn btn-primary">Publish Simulation</button>
+            </form>
+
+            <div class="panel preview reveal">
+              <div class="mini-label">Marketplace Preview</div>
+              <div class="preview-block" id="previewCard">
+                <strong>Untitled Tool</strong>
+                <p class="tiny">Describe and publish to see your standardized card output.</p>
+              </div>
+              <div class="preview-block">
+                <div class="mini-label">Deployment Readiness</div>
+                <div id="readinessText">Awaiting configuration…</div>
+              </div>
+              <div class="preview-block">
+                <div class="mini-label">Estimated Monthly Revenue</div>
+                <div id="revenueEstimate">$0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="economy">
+        <div class="container">
+          <h2 class="section-title reveal">Marketplace Economics</h2>
+          <p class="section-copy reveal">
+            Toggle billing plans to view monetization pathways for creators and enterprise teams.
+          </p>
+
+          <div class="pricing-toggle reveal" id="billingToggle">
+            <button class="active" data-billing="monthly">Monthly</button>
+            <button data-billing="yearly">Yearly (save 20%)</button>
+          </div>
+
+          <div class="grid reveal" id="pricingGrid">
+            <article class="card price-card" data-base="0">
+              <span class="pill">Starter</span>
+              <h3>Free Builder</h3>
+              <div class="amount">$0</div>
+              <p class="tiny">Prototype tools, basic analytics, community listing.</p>
+            </article>
+            <article class="card price-card" data-base="39">
+              <span class="pill">Creator</span>
+              <h3>Monetize</h3>
+              <div class="amount">$39</div>
+              <p class="tiny">Advanced controls, private tools, revenue dashboard.</p>
+            </article>
+            <article class="card price-card" data-base="129">
+              <span class="pill">Scale</span>
+              <h3>Enterprise Runtime</h3>
+              <div class="amount">$129</div>
+              <p class="tiny">Dedicated capacity, SLA, policy enforcement, team seats.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq">
+        <div class="container">
+          <h2 class="section-title reveal">Frequently Asked Questions</h2>
+          <div class="faq reveal">
+            <div class="faq-item open">
+              <button class="faq-q">Is this one single AI model?<span>+</span></button>
+              <div class="faq-a">No. MosaicBots is a distribution and orchestration layer over many specialized AI modules and providers.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q">Can non-technical users run tools?<span>+</span></button>
+              <div class="faq-a">Yes. Discovery, metadata, and guided interfaces reduce complexity so users can execute tools without coding.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q">How does monetization work?<span>+</span></button>
+              <div class="faq-a">Creators can list paid tools with subscription or usage pricing while the platform handles distribution and access controls.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">© 2026 MosaicBots · Build once, compose everywhere.</div>
+    </footer>
+  </div>
+
+  <script>
+    const tools = [
+      { name: "Semantic Brief Generator", category: "Productivity", rating: 4.9, runs: 22040, price: 19, desc: "Summarize large docs into executive-ready briefs.", tag: "summarization" },
+      { name: "K8s Incident Copilot", category: "DevOps", rating: 4.8, runs: 17300, price: 39, desc: "Diagnose logs and propose rollback-safe actions.", tag: "observability" },
+      { name: "Multi-Source Evidence Agent", category: "Research", rating: 4.7, runs: 14110, price: 29, desc: "Cross-validate claims across datasets and reports.", tag: "verification" },
+      { name: "Brand Voice Composer", category: "Creative", rating: 4.6, runs: 20500, price: 24, desc: "Generate content while preserving voice constraints.", tag: "copywriting" },
+      { name: "Support Ticket Deflector", category: "Support", rating: 4.8, runs: 31120, price: 34, desc: "Resolve repetitive tickets with policy-grounded replies.", tag: "automation" },
+      { name: "Prompt Regression Tester", category: "DevOps", rating: 4.5, runs: 9100, price: 14, desc: "Test prompts against benchmark suites before release.", tag: "qa" }
+    ];
+
+    const toolGrid = document.getElementById("toolGrid");
+    const searchInput = document.getElementById("searchTools");
+    const sortTools = document.getElementById("sortTools");
+    const categoryWrap = document.getElementById("categoryFilters");
+
+    let activeCategory = "All";
+
+    function renderTools() {
+      const q = searchInput.value.trim().toLowerCase();
+      const sortBy = sortTools.value;
+
+      let filtered = tools.filter((t) => {
+        const inCat = activeCategory === "All" || t.category === activeCategory;
+        const match = [t.name, t.tag, t.desc, t.category].join(" ").toLowerCase().includes(q);
+        return inCat && match;
       });
 
-      // Generate a QR Code that encodes the current page URL.
-      // You can scan this QR code with your phone to open and play the game.
-      let qrDiv = document.getElementById("qrCode");
-      let currentUrl = window.location.href;
-      new QRCode(qrDiv, {
-        text: currentUrl,
-        width: 128,
-        height: 128,
+      filtered.sort((a, b) => {
+        if (sortBy === "runs") return b.runs - a.runs;
+        if (sortBy === "price") return a.price - b.price;
+        return b.rating - a.rating;
       });
-    </script>
-  </body>
+
+      toolGrid.innerHTML = filtered.length ? filtered.map((t) => `
+        <article class="card">
+          <span class="pill">${t.category}</span>
+          <strong>${t.name}</strong>
+          <p class="tiny">${t.desc}</p>
+          <div class="tool-row tiny"><span>⭐ ${t.rating.toFixed(1)}</span><span>${t.runs.toLocaleString()} runs/mo</span></div>
+          <div class="tool-row"><button class="btn btn-ghost">Try Tool</button><strong>$${t.price}/mo</strong></div>
+        </article>
+      `).join("") : "<p class='tiny'>No tools found for current filters.</p>";
+    }
+
+    searchInput.addEventListener("input", renderTools);
+    sortTools.addEventListener("change", renderTools);
+
+    categoryWrap.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-category]");
+      if (!btn) return;
+      activeCategory = btn.dataset.category;
+      categoryWrap.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+      btn.classList.add("active");
+      renderTools();
+    });
+
+    renderTools();
+
+    const form = document.getElementById("builderForm");
+    const previewCard = document.getElementById("previewCard");
+    const readinessText = document.getElementById("readinessText");
+    const revenueEstimate = document.getElementById("revenueEstimate");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("toolName").value.trim() || "Untitled Tool";
+      const category = document.getElementById("toolCategory").value;
+      const input = document.getElementById("toolInput").value.trim() || "No input schema provided.";
+      const output = document.getElementById("toolOutput").value.trim() || "No output behavior provided.";
+      const price = Number(document.getElementById("toolPricing").value || 0);
+
+      previewCard.innerHTML = `
+        <span class="pill">${category}</span>
+        <strong>${name}</strong>
+        <p class="tiny"><strong>Input:</strong> ${input}</p>
+        <p class="tiny"><strong>Output:</strong> ${output}</p>
+        <div class="tool-row"><span class="tiny">Plan</span><strong>${price === 0 ? "Free" : "$" + price + "/mo"}</strong></div>
+      `;
+
+      const qualityScore = Math.min(100, 50 + Math.floor((input.length + output.length) / 8) + (price > 0 ? 8 : 0));
+      readinessText.textContent = `${qualityScore}% ready · schema standardized · deployable endpoint generated`;
+
+      const projectedUsers = 120 + Math.floor(Math.random() * 180);
+      revenueEstimate.textContent = `$${(projectedUsers * price).toLocaleString()}`;
+    });
+
+    const billingToggle = document.getElementById("billingToggle");
+    billingToggle.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-billing]");
+      if (!btn) return;
+
+      billingToggle.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const yearly = btn.dataset.billing === "yearly";
+      document.querySelectorAll(".price-card").forEach((card) => {
+        const base = Number(card.dataset.base);
+        const amount = yearly ? Math.round(base * 12 * 0.8) : base;
+        card.querySelector(".amount").textContent = yearly ? `$${amount}/yr` : `$${amount}`;
+      });
+    });
+
+    document.querySelectorAll(".faq-q").forEach((q) => {
+      q.addEventListener("click", () => {
+        const item = q.closest(".faq-item");
+        item.classList.toggle("open");
+      });
+    });
+
+    const counters = document.querySelectorAll("[data-count]");
+    const counterObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = Number(el.dataset.count);
+        let n = 0;
+        const step = target / 60;
+        const tick = () => {
+          n += step;
+          if (n >= target) {
+            el.textContent = Number.isInteger(target) ? target.toLocaleString() : target.toFixed(2);
+            return;
+          }
+          el.textContent = Number.isInteger(target) ? Math.floor(n).toLocaleString() : n.toFixed(2);
+          requestAnimationFrame(tick);
+        };
+        tick();
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.4 });
+
+    counters.forEach((c) => counterObserver.observe(c));
+
+    const revealEls = document.querySelectorAll(".reveal");
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add("show");
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach((el) => revealObserver.observe(el));
+
+    const bars = [
+      { id: "r1", min: 90, max: 98 },
+      { id: "r2", min: 74, max: 92 },
+      { id: "r3", min: 82, max: 97 }
+    ];
+
+    setInterval(() => {
+      bars.forEach(({ id, min, max }) => {
+        const next = Math.floor(Math.random() * (max - min + 1)) + min;
+        const el = document.getElementById(id);
+        el.textContent = `${next}%`;
+        el.parentElement.nextElementSibling.firstElementChild.style.width = `${next}%`;
+      });
+    }, 2200);
+
+    const glow = document.getElementById("cursorGlow");
+    document.addEventListener("pointermove", (e) => {
+      glow.style.left = `${e.clientX}px`;
+      glow.style.top = `${e.clientY}px`;
+    });
+
+    const blobs = document.querySelectorAll(".blob");
+    window.addEventListener("scroll", () => {
+      const y = window.scrollY;
+      blobs.forEach((blob) => {
+        const speed = Number(blob.dataset.speed || 0);
+        blob.style.transform = `translateY(${y * speed}px)`;
+      });
+    });
+  </script>
+</body>
 </html>
