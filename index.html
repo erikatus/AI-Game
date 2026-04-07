@@ -1,238 +1,1119 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Skill Builder Game for Kids</title>
-    <style>
-      /* Basic style for a clean, family-friendly interface */
-      body, html {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-      }
-      #description {
-        text-align: center;
-        padding: 20px;
-      }
-      #gameCanvas {
-        display: block;
-        margin: 20px auto;
-        background-color: #fff;
-        border: 2px solid #ccc;
-      }
-      #qrCode {
-        margin: 20px auto;
-        text-align: center;
-      }
-      button {
-        font-size: 18px;
-        padding: 10px 20px;
-        margin-top: 10px;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Introduction & Game Info -->
-    <div id="description">
-      <h1>Skill Builder Game for Kids</h1>
-      <p>
-        Welcome to the Skill Builder Game, designed to help kids learn essential skills through fun challenges.
-        In each round, you’ll be asked to select the correct shape with a specific color. The game provides feedback,
-        builds confidence, and tracks your score as you progress through multiple rounds.
-      </p>
-      <button id="startButton">Start Game</button>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MosaicBots Platform — Build, Discover, Monetize AI Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070b14;
+      --bg-2: #0b1323;
+      --surface: rgba(255, 255, 255, 0.05);
+      --surface-2: rgba(255, 255, 255, 0.08);
+      --line: rgba(255, 255, 255, 0.14);
+      --text: #f5f8ff;
+      --muted: #b7c2da;
+      --primary: #7d8dff;
+      --cyan: #33d1ff;
+      --mint: #36de94;
+      --warn: #ffc85b;
+      --danger: #ff6f91;
+      --radius-lg: 22px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --shadow: 0 24px 55px rgba(0, 0, 0, 0.45);
+      --maxw: 1200px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+      background: radial-gradient(1200px 700px at 5% -10%, #17274d, transparent 55%),
+                  radial-gradient(1100px 700px at 95% 0%, #063f6b, transparent 55%),
+                  var(--bg);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100%;
+      scroll-behavior: smooth;
+    }
+
+    body { overflow-x: hidden; }
+
+    .bg-orb {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(40px);
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-orb.a { width: 280px; height: 280px; top: 18%; left: -90px; background: #4f46e5; }
+    .bg-orb.b { width: 220px; height: 220px; bottom: 10%; right: -70px; background: #0891b2; }
+
+    .site { position: relative; z-index: 1; }
+    .container { width: min(var(--maxw), calc(100% - 2rem)); margin-inline: auto; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 70;
+      background: rgba(7, 11, 20, 0.76);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .topbar .inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: conic-gradient(from 20deg, var(--primary), var(--cyan), var(--mint), var(--primary));
+      box-shadow: 0 10px 26px rgba(91, 126, 255, 0.35);
+    }
+
+    nav { display: flex; align-items: center; gap: 16px; }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s ease;
+    }
+
+    nav a:hover { color: var(--text); }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(120deg, var(--primary), var(--cyan));
+      box-shadow: 0 10px 24px rgba(52, 157, 255, 0.32);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+
+    .btn-small { padding: 8px 12px; font-size: 12px; }
+
+    section { padding: 84px 0; }
+
+    .hero {
+      padding-top: 64px;
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #dce7ff;
+      border: 1px solid rgba(125, 141, 255, 0.55);
+      background: rgba(125, 141, 255, 0.18);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: clamp(2rem, 4.7vw, 3.7rem);
+      max-width: 14ch;
+    }
+
+    .lead {
+      margin-top: 18px;
+      max-width: 64ch;
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 16px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .panel {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface), rgba(255, 255, 255, 0.01));
+      box-shadow: var(--shadow);
+    }
+
+    .hero-monitor {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .tiny-title {
+      color: #d4def7;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .signal {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .signal-head { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+
+    .bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.13); overflow: hidden; }
+
+    .bar > span {
+      display: block;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(120deg, var(--primary), var(--mint));
+      border-radius: inherit;
+      transition: width .3s ease;
+    }
+
+    .terminal {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(2, 6, 16, 0.85);
+      min-height: 120px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #a5f3fc;
+      font-size: 12px;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat .n { font-size: 1.3rem; font-weight: 800; }
+    .stat .l { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    .section-title {
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+      font-size: clamp(1.45rem, 3.2vw, 2.25rem);
+      font-family: "Space Grotesk", Inter, sans-serif;
+    }
+
+    .section-copy {
+      margin: 0 0 22px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 72ch;
+      font-size: 15px;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1.2fr auto;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    input[type="search"], input[type="text"], select, textarea, input[type="number"] {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 11px 13px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(125, 141, 255, 0.8);
+      box-shadow: 0 0 0 3px rgba(125, 141, 255, 0.2);
+    }
+
+    textarea { min-height: 96px; resize: vertical; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+
+    .chip {
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      color: #fff;
+      border-color: rgba(125, 141, 255, 0.8);
+      background: rgba(125, 141, 255, 0.25);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .tool-card {
+      border-radius: 13px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .tool-card:hover { transform: translateY(-2px); border-color: rgba(125, 141, 255, 0.7); }
+
+    .pill {
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      padding: 5px 9px;
+      width: fit-content;
+      font-size: 11px;
+      color: #d6ddf6;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .muted { color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .tool-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+    .runtime {
+      margin-top: 26px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .runtime .box { padding: 14px; }
+
+    .console {
+      min-height: 180px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      background: rgba(0, 8, 20, 0.9);
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #bae6fd;
+      white-space: pre-wrap;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .block { padding: 16px; }
+
+    .builder-preview {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .chart {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 50px;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .chart-row .track {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.13);
+      overflow: hidden;
+    }
+
+    .chart-row .track span {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(120deg, var(--primary), var(--cyan));
+      transition: width .6s ease;
+    }
+
+    .calc {
+      display: grid;
+      gap: 10px;
+    }
+
+    .calc .output {
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.03);
+      padding: 10px;
+      font-size: 13px;
+      color: #ddfbe8;
+    }
+
+    .faq { display: grid; gap: 10px; }
+
+    .faq-item {
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      overflow: hidden;
+    }
+
+    .faq-q {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .28s ease;
+      color: var(--muted);
+      line-height: 1.7;
+      padding: 0 16px;
+      font-size: 14px;
+    }
+
+    .faq-item.open .faq-a { max-height: 180px; padding-bottom: 14px; }
+
+    .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+    .reveal.show { opacity: 1; transform: translateY(0); }
+
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 30px;
+      color: var(--muted);
+      padding: 24px 0 32px;
+      font-size: 14px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-card {
+      width: min(620px, 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: #0a1020;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 10px;
+    }
+
+    .status {
+      color: #b8ffdc;
+      font-size: 12px;
+      background: rgba(54, 222, 148, 0.16);
+      border: 1px solid rgba(54, 222, 148, 0.45);
+      width: fit-content;
+      border-radius: 999px;
+      padding: 5px 9px;
+    }
+
+    @media (max-width: 980px) {
+      .hero, .split, .runtime { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      nav { display: none; }
+      .grid { grid-template-columns: 1fr; }
+      .control-row { grid-template-columns: 1fr; }
+      .chart-row { grid-template-columns: 1fr; }
+      .chart-row .track { margin: 6px 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-orb a" data-speed="0.05"></div>
+  <div class="bg-orb b" data-speed="-0.04"></div>
+
+  <div class="site">
+    <header class="topbar">
+      <div class="container inner">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <span>MosaicBots</span>
+        </div>
+        <nav>
+          <a href="#market">Marketplace</a>
+          <a href="#runtime">Runtime</a>
+          <a href="#builder">Builder</a>
+          <a href="#discovery">Discovery</a>
+          <a href="#economics">Monetization</a>
+        </nav>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-secondary">Sign in</button>
+          <button class="btn btn-primary">Create Tool</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="container hero">
+          <div class="reveal">
+            <div class="badge">⚡ Modular AI marketplace infrastructure</div>
+            <h1>One platform to build, discover, run, and monetize AI tools.</h1>
+            <p class="lead">
+              MosaicBots works as an ecosystem layer over AI providers. Creators publish standardized tool modules,
+              users discover by category and intent, and organizations execute production-ready endpoints with a
+              marketplace economy built in.
+            </p>
+            <div class="hero-actions">
+              <button class="btn btn-primary" onclick="scrollToId('market')">Explore Marketplace</button>
+              <button class="btn btn-secondary" onclick="scrollToId('builder')">Open Builder</button>
+            </div>
+            <div class="stats" id="heroStats">
+              <div class="stat"><div class="n" data-count="1587">0</div><div class="l">Published tools</div></div>
+              <div class="stat"><div class="n" data-count="108420">0</div><div class="l">Monthly executions</div></div>
+              <div class="stat"><div class="n" data-count="4630">0</div><div class="l">Active creators</div></div>
+              <div class="stat"><div class="n" data-count="99.97">0</div><div class="l">Execution uptime %</div></div>
+            </div>
+          </div>
+
+          <aside class="panel hero-monitor reveal">
+            <div class="tiny-title">Realtime orchestration signal</div>
+            <div class="signal">
+              <div class="signal-head"><span>Model Router</span><strong id="sig1">93%</strong></div>
+              <div class="bar"><span style="width:93%"></span></div>
+            </div>
+            <div class="signal">
+              <div class="signal-head"><span>Container Queue</span><strong id="sig2">84%</strong></div>
+              <div class="bar"><span style="width:84%"></span></div>
+            </div>
+            <div class="signal">
+              <div class="signal-head"><span>Policy Guardrails</span><strong id="sig3">97%</strong></div>
+              <div class="bar"><span style="width:97%"></span></div>
+            </div>
+            <div class="terminal" id="heroTerminal"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="market">
+        <div class="container">
+          <h2 class="section-title reveal">Marketplace + Discovery</h2>
+          <p class="section-copy reveal">
+            Browse by domain, rank by quality and usage, and execute a tool directly from the catalog. This mirrors
+            the discoverability layer of MosaicBots where modules are searchable, tagged, and immediately usable.
+          </p>
+
+          <div class="control-row reveal">
+            <input id="searchInput" type="search" placeholder="Search tools, tags, use-cases..." />
+            <select id="sortSelect" aria-label="Sort tools">
+              <option value="rating">Sort by rating</option>
+              <option value="runs">Sort by monthly runs</option>
+              <option value="price">Sort by price</option>
+            </select>
+          </div>
+
+          <div class="filters reveal" id="filterBar">
+            <button class="chip active" data-category="All">All</button>
+            <button class="chip" data-category="Productivity">Productivity</button>
+            <button class="chip" data-category="Development">Development</button>
+            <button class="chip" data-category="Research">Research</button>
+            <button class="chip" data-category="Creative">Creative</button>
+            <button class="chip" data-category="Support">Support</button>
+          </div>
+
+          <div class="grid reveal" id="toolGrid"></div>
+        </div>
+      </section>
+
+      <section id="runtime">
+        <div class="container">
+          <h2 class="section-title reveal">Interactive Runtime Studio</h2>
+          <p class="section-copy reveal">
+            Select a tool and run a live simulation endpoint. This demonstrates how end users can operationalize AI
+            modules in real time without touching infrastructure.
+          </p>
+
+          <div class="runtime">
+            <div class="panel box reveal">
+              <div class="tiny-title" style="margin-bottom:8px;">Execute tool endpoint</div>
+              <label>Selected Tool
+                <input id="runtimeTool" type="text" readonly value="Semantic Brief Generator" />
+              </label>
+              <label style="display:block; margin-top:8px;">Input
+                <textarea id="runtimeInput" placeholder="Paste content or user request..."></textarea>
+              </label>
+              <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                <button class="btn btn-primary" id="runBtn">Run endpoint</button>
+                <button class="btn btn-secondary" id="clearConsoleBtn">Clear log</button>
+              </div>
+              <p class="muted" style="margin-top:8px;">Execution time and output are simulated client-side for preview.</p>
+            </div>
+            <div class="panel box reveal">
+              <div class="tiny-title" style="margin-bottom:8px;">Runtime Console</div>
+              <div class="console" id="runtimeConsole">[ready] runtime initialized
+[info] waiting for tool execution...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="builder">
+        <div class="container">
+          <h2 class="section-title reveal">Creator Builder Interface</h2>
+          <p class="section-copy reveal">
+            Define tool metadata, I/O schema, pricing, and publish directly into the marketplace list below. This
+            simulates the no-infrastructure builder abstraction that standardizes deployment.
+          </p>
+
+          <div class="split">
+            <form class="panel block reveal" id="builderForm">
+              <label>Tool name
+                <input id="bName" type="text" placeholder="e.g. Legal Clause Auditor" required />
+              </label>
+              <label style="display:block; margin-top:8px;">Category
+                <select id="bCategory">
+                  <option>Productivity</option>
+                  <option>Development</option>
+                  <option>Research</option>
+                  <option>Creative</option>
+                  <option>Support</option>
+                </select>
+              </label>
+              <label style="display:block; margin-top:8px;">Input schema
+                <textarea id="bInput" placeholder="{ document: string, jurisdiction: string }"></textarea>
+              </label>
+              <label style="display:block; margin-top:8px;">Output behavior
+                <textarea id="bOutput" placeholder="Return highlighted risks, confidence score, and mitigation advice."></textarea>
+              </label>
+              <label style="display:block; margin-top:8px;">Monthly price ($)
+                <input id="bPrice" type="number" min="0" value="29" />
+              </label>
+              <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-primary" type="submit">Publish to Marketplace</button>
+                <button class="btn btn-secondary" type="reset">Reset</button>
+              </div>
+            </form>
+
+            <div class="panel block reveal">
+              <div class="tiny-title" style="margin-bottom:10px;">Tool preview + readiness</div>
+              <div class="builder-preview" id="builderPreview">
+                <strong>Untitled Tool</strong>
+                <div class="muted">Complete the builder form to generate a standardized listing preview.</div>
+              </div>
+              <div class="builder-preview" style="margin-top:10px;">
+                <div class="muted">Deployment readiness</div>
+                <strong id="readyScore">Awaiting configuration...</strong>
+              </div>
+              <div class="builder-preview" style="margin-top:10px;">
+                <div class="muted">Estimated creator revenue</div>
+                <strong id="creatorRevenue">$0 / month</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="discovery">
+        <div class="container">
+          <h2 class="section-title reveal">Discovery Ranking Signals</h2>
+          <p class="section-copy reveal">
+            Relevance, reliability, and user trust scores drive ranking quality so users find useful tools faster.
+          </p>
+
+          <div class="panel block reveal">
+            <div class="tiny-title">Top ranking dimensions</div>
+            <div class="chart" id="rankChart">
+              <div class="chart-row" data-value="91"><span>Relevance</span><div class="track"><span></span></div><strong>91</strong></div>
+              <div class="chart-row" data-value="88"><span>Reliability</span><div class="track"><span></span></div><strong>88</strong></div>
+              <div class="chart-row" data-value="84"><span>Satisfaction</span><div class="track"><span></span></div><strong>84</strong></div>
+              <div class="chart-row" data-value="79"><span>Retention</span><div class="track"><span></span></div><strong>79</strong></div>
+              <div class="chart-row" data-value="86"><span>Response latency</span><div class="track"><span></span></div><strong>86</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="economics">
+        <div class="container">
+          <h2 class="section-title reveal">Monetization + Marketplace Economy</h2>
+          <p class="section-copy reveal">
+            Estimate creator earnings with subscription + usage assumptions. This models platform economics and
+            incentives for higher quality tool modules.
+          </p>
+
+          <div class="split">
+            <div class="panel block calc reveal">
+              <label>Subscribers
+                <input id="subscribers" type="number" min="0" value="240" />
+              </label>
+              <label>Price per subscriber ($)
+                <input id="subPrice" type="number" min="0" value="29" />
+              </label>
+              <label>Usage calls / month
+                <input id="usageCalls" type="number" min="0" value="78000" />
+              </label>
+              <label>Usage fee per 1k calls ($)
+                <input id="usageFee" type="number" min="0" value="1.8" step="0.1" />
+              </label>
+              <label>Creator revenue share (%)
+                <input id="revShare" type="number" min="1" max="100" value="85" />
+              </label>
+              <button class="btn btn-primary" id="calcBtn">Calculate payout</button>
+              <div class="output" id="calcOutput">Estimated creator payout: $0</div>
+            </div>
+
+            <div class="panel block reveal">
+              <div class="tiny-title" style="margin-bottom:10px;">Billing plans</div>
+              <div style="display:grid; gap:8px;">
+                <div class="builder-preview"><span class="pill">Starter</span><strong>$0</strong><div class="muted">Public listings + basic analytics</div></div>
+                <div class="builder-preview"><span class="pill">Creator</span><strong>$49 / month</strong><div class="muted">Private tools + monetization dashboard</div></div>
+                <div class="builder-preview"><span class="pill">Enterprise</span><strong>$199 / month</strong><div class="muted">Dedicated runtime + governance controls</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq">
+        <div class="container">
+          <h2 class="section-title reveal">FAQ</h2>
+          <div class="faq reveal">
+            <div class="faq-item open">
+              <button class="faq-q">Is this a single AI chatbot?<span>+</span></button>
+              <div class="faq-a">No. MosaicBots is a modular ecosystem for many specialized AI tools and agents, each discoverable and executable in one place.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q">Can developers publish and sell tools?<span>+</span></button>
+              <div class="faq-a">Yes. The builder and monetization layers are designed so creators can publish structured tools and earn recurring revenue.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q">Can non-technical users still use tools?<span>+</span></button>
+              <div class="faq-a">Yes. Discovery and execution UIs are built to reduce complexity, so users can run tools via simple interfaces.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">© 2026 MosaicBots — AI tool infrastructure for builders and operators.</div>
+    </footer>
+  </div>
+
+  <div class="modal" id="runModal" aria-hidden="true">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <strong id="modalTitle">Run Tool</strong>
+        <button class="btn btn-secondary btn-small" id="closeModalBtn">Close</button>
+      </div>
+      <div class="status">Endpoint active</div>
+      <textarea id="modalPrompt" placeholder="Type a prompt to test this tool..."></textarea>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary btn-small" id="modalRunBtn">Execute</button>
+        <button class="btn btn-secondary btn-small" id="modalClearBtn">Clear</button>
+      </div>
+      <div class="console" id="modalConsole">[ready] tool sandbox waiting for input...</div>
     </div>
+  </div>
 
-    <!-- Canvas for the game -->
-    <canvas id="gameCanvas" width="800" height="600" style="display: none;"></canvas>
+  <script>
+    const state = {
+      tools: [
+        { id: 1, name: "Semantic Brief Generator", category: "Productivity", rating: 4.9, runs: 25200, price: 19, tag: "summary", desc: "Turn long content into concise executive briefs." },
+        { id: 2, name: "Kubernetes Incident Copilot", category: "Development", rating: 4.8, runs: 18800, price: 39, tag: "devops", desc: "Analyze logs, identify root cause, propose safe mitigations." },
+        { id: 3, name: "Evidence Triangulation Agent", category: "Research", rating: 4.7, runs: 14200, price: 29, tag: "verification", desc: "Cross-check claims across uploaded reports and notes." },
+        { id: 4, name: "Brand Tone Composer", category: "Creative", rating: 4.6, runs: 21600, price: 24, tag: "content", desc: "Generate campaigns while maintaining brand voice consistency." },
+        { id: 5, name: "Support Deflection Assistant", category: "Support", rating: 4.8, runs: 33100, price: 34, tag: "helpdesk", desc: "Resolve repetitive support requests with policy-aware answers." },
+        { id: 6, name: "Prompt QA Regressor", category: "Development", rating: 4.5, runs: 9600, price: 12, tag: "qa", desc: "Regression test prompts before shipping to production." }
+      ],
+      category: "All",
+      selectedTool: "Semantic Brief Generator"
+    };
 
-    <!-- QR Code Display Area -->
-    <div id="qrCode"></div>
+    const toolGrid = document.getElementById("toolGrid");
+    const searchInput = document.getElementById("searchInput");
+    const sortSelect = document.getElementById("sortSelect");
+    const filterBar = document.getElementById("filterBar");
+    const runtimeTool = document.getElementById("runtimeTool");
+    const runtimeInput = document.getElementById("runtimeInput");
+    const runtimeConsole = document.getElementById("runtimeConsole");
 
-    <!-- QR Code library loaded from a CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <script>
-      /******************************************************
-       * Skill Builder Game for Kids - Web Version
-       *
-       * This game is meant for children who need an engaging,
-       * interactive way to earn and practice essential skills.
-       *
-       * Game Overview:
-       * - Displays a challenge (e.g., "Click the red circle")
-       * - Shows 3 options: one correct and two decoys.
-       * - Awards points for correct answers; deducts for wrong ones.
-       * - Advances through several rounds with clear feedback.
-       *
-       * The game also automatically generates a QR code for the
-       * current page URL, making it easy to load on a mobile device.
-       ******************************************************/
+    function renderTools() {
+      const q = searchInput.value.trim().toLowerCase();
+      const sort = sortSelect.value;
 
-      // Get DOM elements
-      let canvas = document.getElementById('gameCanvas');
-      let ctx = canvas.getContext('2d');
-      let startButton = document.getElementById('startButton');
-      let description = document.getElementById('description');
-      
-      // Game state variables
-      let gameState = 'welcome';  // Possible states: welcome, play, end
-      let score = 0;
-      let round = 1;
-      const totalRounds = 5;  // You can expand the number of rounds as needed
-      
-      // Define available colors and shapes
-      const COLORS = ['red', 'green', 'blue', 'yellow', 'orange', 'purple'];
-      const SHAPES = ['circle', 'square'];
-      
-      // Challenge variables for the current round
-      let targetColor, targetShape;
-      let options = [];   // Array to hold option objects with shape, color, position, and correctness flag
-      let message = '';
-
-      // Generate a new challenge for the current round
-      function generateChallenge() {
-        // Randomly choose a target color and shape for the current challenge
-        targetColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-        targetShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-
-        // Prepare an array of three options (one correct, two incorrect)
-        options = [];
-        let correctIndex = Math.floor(Math.random() * 3);  // Position of correct answer
-
-        for (let i = 0; i < 3; i++) {
-          let option = { color: null, shape: null, x: 0, y: 0, isCorrect: false };
-          if (i === correctIndex) {
-            // The correct option matches the target
-            option.color = targetColor;
-            option.shape = targetShape;
-            option.isCorrect = true;
-          } else {
-            // Generate a decoy that is different in either color or shape
-            do {
-              option.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-              option.shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-            } while (option.color === targetColor && option.shape === targetShape);
-          }
-          // Determine positions (evenly spaced horizontally)
-          option.x = 150 + i * 250;
-          option.y = 400;
-          options.push(option);
-        }
-        message = `Round ${round}: Click the ${targetColor} ${targetShape}`;
-      }
-
-      // Draw the game state on the canvas
-      function drawGame() {
-        // Clear the canvas for fresh drawing
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw the challenge message and score at the top
-        ctx.font = "24px Arial";
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.fillText(message, canvas.width / 2, 50);
-        ctx.font = "20px Arial";
-        ctx.fillText("Score: " + score, canvas.width - 80, 30);
-
-        // Draw each option on the canvas
-        options.forEach(option => {
-          ctx.fillStyle = option.color;
-          if (option.shape === 'circle') {
-            ctx.beginPath();
-            ctx.arc(option.x, option.y, 40, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.closePath();
-          } else if (option.shape === 'square') {
-            ctx.fillRect(option.x - 40, option.y - 40, 80, 80);
-          }
-        });
-      }
-
-      // Handle the player's click on the canvas
-      function handleClick(event) {
-        let rect = canvas.getBoundingClientRect();
-        let x = event.clientX - rect.left;
-        let y = event.clientY - rect.top;
-
-        // Evaluate each option to see if it was clicked
-        options.forEach(option => {
-          if (option.shape === 'circle') {
-            let dist = Math.sqrt((x - option.x) ** 2 + (y - option.y) ** 2);
-            if (dist <= 40) {
-              processOption(option);
-            }
-          } else if (option.shape === 'square') {
-            if (x >= option.x - 40 && x <= option.x + 40 && y >= option.y - 40 && y <= option.y + 40) {
-              processOption(option);
-            }
-          }
-        });
-      }
-
-      // Process the result of a player's click
-      function processOption(option) {
-        if (option.isCorrect) {
-          score += 10;
-          message = "Correct! Great job!";
-        } else {
-          score = Math.max(0, score - 5);
-          message = "Oops, that's not right. Let's try the next round!";
-        }
-        drawGame();
-        // Allow a short delay before advancing to the next round
-        setTimeout(() => {
-          round++;
-          if (round > totalRounds) {
-            endGame();
-          } else {
-            generateChallenge();
-            drawGame();
-          }
-        }, 1000);
-      }
-
-      // End the game and show the final score
-      function endGame() {
-        gameState = 'end';
-        message = `Game Over! Your Final Score: ${score}`;
-        drawGame();
-        // Prompt the user to play again after a short pause
-        setTimeout(() => {
-          if (confirm("Game Over! Would you like to play again?")) {
-            score = 0;
-            round = 1;
-            gameState = 'play';
-            generateChallenge();
-            drawGame();
-          }
-        }, 500);
-      }
-
-      // Set up event listener on the canvas for click events
-      canvas.addEventListener('click', handleClick);
-
-      // Start the game when the button is clicked:
-      // Hide the introduction, show the canvas, and initialize the first round.
-      startButton.addEventListener('click', () => {
-        description.style.display = 'none';
-        canvas.style.display = 'block';
-        gameState = 'play';
-        generateChallenge();
-        drawGame();
+      let data = state.tools.filter((tool) => {
+        const inCategory = state.category === "All" || tool.category === state.category;
+        const combined = `${tool.name} ${tool.category} ${tool.tag} ${tool.desc}`.toLowerCase();
+        return inCategory && combined.includes(q);
       });
 
-      // Generate a QR Code that encodes the current page URL.
-      // You can scan this QR code with your phone to open and play the game.
-      let qrDiv = document.getElementById("qrCode");
-      let currentUrl = window.location.href;
-      new QRCode(qrDiv, {
-        text: currentUrl,
-        width: 128,
-        height: 128,
+      data.sort((a, b) => {
+        if (sort === "runs") return b.runs - a.runs;
+        if (sort === "price") return a.price - b.price;
+        return b.rating - a.rating;
       });
-    </script>
-  </body>
+
+      toolGrid.innerHTML = data.length ? data.map((tool) => `
+        <article class="tool-card">
+          <span class="pill">${tool.category}</span>
+          <strong>${tool.name}</strong>
+          <p class="muted">${tool.desc}</p>
+          <div class="tool-row muted"><span>⭐ ${tool.rating.toFixed(1)}</span><span>${tool.runs.toLocaleString()} runs/mo</span></div>
+          <div class="tool-row">
+            <div><strong>$${tool.price}</strong><span class="muted"> / month</span></div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-secondary btn-small" onclick="setRuntimeTool('${tool.name.replace(/'/g, "&#39;")}')">Select</button>
+              <button class="btn btn-primary btn-small" onclick="openRunModal('${tool.name.replace(/'/g, "&#39;")}')">Run</button>
+            </div>
+          </div>
+        </article>
+      `).join("") : "<p class='muted'>No tools match current filters.</p>";
+    }
+
+    searchInput.addEventListener("input", renderTools);
+    sortSelect.addEventListener("change", renderTools);
+    filterBar.addEventListener("click", (e) => {
+      const chip = e.target.closest("button[data-category]");
+      if (!chip) return;
+      state.category = chip.dataset.category;
+      filterBar.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+      renderTools();
+    });
+
+    window.setRuntimeTool = function(name) {
+      state.selectedTool = name;
+      runtimeTool.value = name;
+      runtimeConsole.textContent += `\n[select] ${name}`;
+    }
+
+    function appendRuntime(msg) {
+      runtimeConsole.textContent += `\n${msg}`;
+      runtimeConsole.scrollTop = runtimeConsole.scrollHeight;
+    }
+
+    document.getElementById("runBtn").addEventListener("click", () => {
+      const input = runtimeInput.value.trim();
+      if (!input) {
+        appendRuntime("[warn] input required to execute endpoint");
+        return;
+      }
+      appendRuntime(`[run] ${state.selectedTool} ...`);
+      const latency = 400 + Math.floor(Math.random() * 1000);
+      setTimeout(() => {
+        const output = simulateOutput(state.selectedTool, input);
+        appendRuntime(`[ok] ${latency}ms`);
+        appendRuntime(`[out] ${output}`);
+      }, latency);
+    });
+
+    document.getElementById("clearConsoleBtn").addEventListener("click", () => {
+      runtimeConsole.textContent = "[ready] runtime initialized\n[info] waiting for tool execution...";
+    });
+
+    const builderForm = document.getElementById("builderForm");
+    const builderPreview = document.getElementById("builderPreview");
+    const readyScore = document.getElementById("readyScore");
+    const creatorRevenue = document.getElementById("creatorRevenue");
+
+    builderForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("bName").value.trim() || "Untitled Tool";
+      const category = document.getElementById("bCategory").value;
+      const input = document.getElementById("bInput").value.trim() || "No schema";
+      const output = document.getElementById("bOutput").value.trim() || "No behavior";
+      const price = Math.max(0, Number(document.getElementById("bPrice").value || 0));
+
+      const quality = Math.min(100, 52 + Math.floor((input.length + output.length) / 7) + (price > 0 ? 7 : 0));
+      const estUsers = 140 + Math.floor(Math.random() * 180);
+
+      builderPreview.innerHTML = `
+        <span class="pill">${category}</span>
+        <strong>${name}</strong>
+        <div class="muted"><strong>Input:</strong> ${input}</div>
+        <div class="muted"><strong>Output:</strong> ${output}</div>
+        <div class="muted"><strong>Price:</strong> ${price === 0 ? "Free" : "$" + price + " / month"}</div>
+      `;
+      readyScore.textContent = `${quality}% ready · standardized endpoint generated`;
+      creatorRevenue.textContent = `$${(estUsers * price).toLocaleString()} / month`;
+
+      state.tools.unshift({
+        id: Date.now(),
+        name,
+        category,
+        rating: 4.2,
+        runs: 0,
+        price,
+        tag: "new",
+        desc: output.length > 92 ? output.slice(0, 92) + "..." : output
+      });
+      state.category = "All";
+      filterBar.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+      filterBar.querySelector("button[data-category='All']").classList.add("active");
+      renderTools();
+      appendRuntime(`[publish] ${name} listed in marketplace`);
+    });
+
+    function simulateOutput(toolName, input) {
+      const snippets = {
+        "Semantic Brief Generator": "Brief generated: key findings, risks, and recommended actions extracted.",
+        "Kubernetes Incident Copilot": "Incident summary: probable root cause identified with rollback and patch plan.",
+        "Evidence Triangulation Agent": "Cross-source confidence score computed with cited evidence clusters.",
+        "Brand Tone Composer": "Draft produced in target brand tone with channel-specific variants.",
+        "Support Deflection Assistant": "Response drafted with policy-safe resolution steps and escalation triggers.",
+        "Prompt QA Regressor": "Regression run complete: 3 failures, 12 passes, suggested prompt fixes attached."
+      };
+      return snippets[toolName] || `Tool response synthesized for input (${Math.min(input.length, 240)} chars).`;
+    }
+
+    const calcBtn = document.getElementById("calcBtn");
+    const calcOutput = document.getElementById("calcOutput");
+    calcBtn.addEventListener("click", () => {
+      const subs = Number(document.getElementById("subscribers").value || 0);
+      const subPrice = Number(document.getElementById("subPrice").value || 0);
+      const usageCalls = Number(document.getElementById("usageCalls").value || 0);
+      const usageFee = Number(document.getElementById("usageFee").value || 0);
+      const revShare = Math.min(100, Math.max(1, Number(document.getElementById("revShare").value || 85)));
+
+      const subscriptionRevenue = subs * subPrice;
+      const usageRevenue = (usageCalls / 1000) * usageFee;
+      const gross = subscriptionRevenue + usageRevenue;
+      const creator = gross * (revShare / 100);
+      const platform = gross - creator;
+
+      calcOutput.textContent = `Estimated creator payout: $${creator.toLocaleString(undefined, { maximumFractionDigits: 2 })} · Platform fee: $${platform.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+    });
+
+    const runModal = document.getElementById("runModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalPrompt = document.getElementById("modalPrompt");
+    const modalConsole = document.getElementById("modalConsole");
+
+    window.openRunModal = function(toolName) {
+      setRuntimeTool(toolName);
+      modalTitle.textContent = `Run ${toolName}`;
+      modalPrompt.value = "";
+      modalConsole.textContent = `[ready] ${toolName} sandbox waiting for input...`;
+      runModal.classList.add("show");
+      runModal.setAttribute("aria-hidden", "false");
+    }
+
+    document.getElementById("closeModalBtn").addEventListener("click", closeRunModal);
+    runModal.addEventListener("click", (e) => {
+      if (e.target === runModal) closeRunModal();
+    });
+
+    function closeRunModal() {
+      runModal.classList.remove("show");
+      runModal.setAttribute("aria-hidden", "true");
+    }
+
+    document.getElementById("modalRunBtn").addEventListener("click", () => {
+      const input = modalPrompt.value.trim();
+      if (!input) {
+        modalConsole.textContent += "\n[warn] provide prompt input first";
+        return;
+      }
+      modalConsole.textContent += `\n[run] ${state.selectedTool}`;
+      const latency = 350 + Math.floor(Math.random() * 850);
+      setTimeout(() => {
+        modalConsole.textContent += `\n[ok] ${latency}ms\n[out] ${simulateOutput(state.selectedTool, input)}`;
+        modalConsole.scrollTop = modalConsole.scrollHeight;
+      }, latency);
+    });
+
+    document.getElementById("modalClearBtn").addEventListener("click", () => {
+      modalConsole.textContent = `[ready] ${state.selectedTool} sandbox waiting for input...`;
+    });
+
+    document.querySelectorAll(".faq-q").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        btn.closest(".faq-item").classList.toggle("open");
+      });
+    });
+
+    const counterObs = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = Number(el.dataset.count);
+        let value = 0;
+        const step = target / 60;
+        const tick = () => {
+          value += step;
+          if (value >= target) {
+            el.textContent = Number.isInteger(target) ? target.toLocaleString() : target.toFixed(2);
+            return;
+          }
+          el.textContent = Number.isInteger(target) ? Math.floor(value).toLocaleString() : value.toFixed(2);
+          requestAnimationFrame(tick);
+        };
+        tick();
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.45 });
+
+    document.querySelectorAll("[data-count]").forEach((el) => counterObs.observe(el));
+
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add("show");
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll(".reveal").forEach((el) => revealObs.observe(el));
+
+    const rankingRows = document.querySelectorAll(".chart-row");
+    const chartObs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const row = entry.target;
+        const value = Number(row.dataset.value || 0);
+        row.querySelector(".track span").style.width = `${value}%`;
+      });
+    }, { threshold: 0.4 });
+    rankingRows.forEach((row) => chartObs.observe(row));
+
+    const signals = [
+      { id: "sig1", min: 89, max: 98 },
+      { id: "sig2", min: 78, max: 93 },
+      { id: "sig3", min: 94, max: 99 }
+    ];
+
+    setInterval(() => {
+      signals.forEach((sig) => {
+        const val = Math.floor(Math.random() * (sig.max - sig.min + 1)) + sig.min;
+        const node = document.getElementById(sig.id);
+        node.textContent = `${val}%`;
+        node.parentElement.nextElementSibling.firstElementChild.style.width = `${val}%`;
+      });
+    }, 2200);
+
+    const heroTerminal = document.getElementById("heroTerminal");
+    const terminalLines = [
+      "[router] provider=openai model=tool-4 selected",
+      "[queue] container spin-up completed",
+      "[policy] guardrails check: pass",
+      "[billing] usage metering active",
+      "[market] ranking index refreshed"
+    ];
+    let tIndex = 0;
+    function tickTerminal() {
+      heroTerminal.textContent += (heroTerminal.textContent ? "\n" : "") + terminalLines[tIndex % terminalLines.length];
+      tIndex += 1;
+      if (heroTerminal.textContent.split("\n").length > 7) {
+        heroTerminal.textContent = heroTerminal.textContent.split("\n").slice(-7).join("\n");
+      }
+    }
+    tickTerminal();
+    setInterval(tickTerminal, 1700);
+
+    const orbs = document.querySelectorAll(".bg-orb");
+    window.addEventListener("scroll", () => {
+      const y = window.scrollY;
+      orbs.forEach((orb) => {
+        const speed = Number(orb.dataset.speed || 0);
+        orb.style.transform = `translateY(${y * speed}px)`;
+      });
+    });
+
+    function scrollToId(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    window.scrollToId = scrollToId;
+
+    renderTools();
+  </script>
+</body>
 </html>
